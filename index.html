@@ -1,0 +1,426 @@
+<!doctype html>  
+<html lang="en">
+	
+	<head>
+		<meta charset="utf-8">
+		
+		<title>reveal.js - HTML5 Presentations</title>
+
+		<meta name="description" content="An easy to use CSS 3D slideshow tool for quickly creating good looking HTML presentations.">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+		
+		<link href='http://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+		
+		<link rel="stylesheet" href="css/reset.css">
+		<link rel="stylesheet" href="css/main.css">
+		<link rel="stylesheet" href="css/print.css" type="text/css" media="print">
+
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+		
+		<style type="text/css">
+		
+		html.jquerycon body {
+		  background: url(img/bg.png) center center no-repeat;
+		}
+		
+		</style>
+		
+	</head>
+	
+	<body>
+		
+		<div class="reveal">
+
+			<!-- Used to fade in a background when a specific slide state is reached -->
+			<div class="state-background"></div>
+			
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+			
+			  <section data-state="jquerycon"></section>
+			
+			  <section>
+			    <br/><br/><br/>
+			    <h1>Modern Web Applications</h1>
+			    <h3>Lessons Learned at jQueryCon 2012</h3>			  
+			  </section>
+						
+			  <section>			 
+			    <br/><br/><br/> 
+  			  <h2>Motivations for Attending</h2>
+  			  <ul>
+    			  <li class="fragment">Single Page Web Apps</li>
+    			  <li class="fragment">Growth of HTML5/CSS3</li>
+    			  <li class="fragment">Solving the challenges of this shift</li>
+  			  </ul>
+        </section>
+        
+        <section>  
+          <br/><br/><br/>			  
+  			  <h2>Topics and Themes</h2>
+  			  <ul>
+    			  <li class="fragment">The State of jQuery</li>
+    			  <li class="fragment">Do’s and Don’ts</li>
+    			  <li class="fragment">Handling Code Complexity</li>
+    			  <li class="fragment">Automation and Testing Tools</li>
+  			  </ul>
+        </section>
+        
+        <section>
+          <section>
+            <br/><br/>
+    			  <h2>The Single Page App</h2>
+    			  <ul>
+      			  <li class="fragment">An application that runs entirely in a single browser page that requires no refreshes and accomplishes all interaction asynchronously.</li>
+      			  <li class="fragment">Decouples client interaction logic and presentation logic from server business logic and models.</li>
+      			  <li class="fragment">Examples: Gmail, Trello, iCloud, Google Docs</li>
+    			  </ul>
+  			  </section>  			  
+			    <section>
+			      <br/><br/><br/>
+			      <h3>Benefits</h3>
+			      <ul>
+			    	  <li class="fragment">Increased Responsiveness</li>
+			    	  <li class="fragment">More native-like behavior</li>
+			    	  <li class="fragment">Decoupling &amp; Modularity</li>
+			    	  <li class="fragment">Offloading Processing (ie. Sorting)</li>
+			      </ul>
+			    </section>			    
+			    <section>
+			      <br/><br/><br/>
+			      <h3>Challenges</h3>
+			      <ul>
+			    	  <li class="fragment">Increased Code Complexity</li>
+			    	  <li class="fragment">Maintaining State in Pages</li>
+			    	  <li class="fragment">Integrity of Dynamic Language, Markup</li>
+			    	  <li class="fragment">Lack of Testing &amp; Build Tools</li>
+			      </ul>
+			    </section> 			  
+  			</section>
+
+  			<section>
+  			  <section>
+  			    <br/><br/><br/>
+  			    <h2>Challenge 1: Code Complexity</h2>
+  			    <ul>
+  			  	  <li class="fragment">A thicker client means more logic is written client side</li>
+  			  	  <li class="fragment">Easy to end up with spaghetti code</li>
+  			  	  <li class="fragment">Client-side MVC Frameworks can structure code</li>
+  			  	  <li class="fragment">Example: Backbone.js</li>
+  			    </ul>
+  			  </section>  			  
+  			  <section>
+  			    <br/>
+  			    <h3>Before</h3>
+  			    <pre><code style="font-size: 14px; line-height: 1.5em;" contenteditable="">
+$(document).ready(function() {
+    $('#my-form').submit(function(e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: '/customer',
+            type: 'POST',
+            dataType: 'json',
+            data: { text: $(this).find('input[name="customer_name"]').val() },
+            success: function(data) {
+                $('#customers').append('customer: ' + data);
+                $(this).find('input[name="customer_name"]').val('');
+            }
+        });
+    });
+});
+					</code></pre>
+  			  </section>
+  			  <section>
+  			    <br/>
+  			    <h3>After</h3>
+  			    <pre><code style="font-size: 14px; line-height: 1.2em;" contenteditable>
+var Customer = Backbone.Model.extend({
+    url: '/customer'
+});
+
+var Customers = Backbone.Collection.extend({
+    model: Customer
+});
+
+var CustomersView = Backbone.View.extend({
+    initialize: function() {
+        this.collection.on('add', this.appendCustomer, this);
+    },
+
+    appendCustomer: function(customer) {
+        this.$('ul').append('li' + customer.escape('text') + 'li');
+    }
+});
+
+$(document).ready(function() {
+    var customers = new Customers();
+    new CustomersView({ el: $('#customers'), collection: customers });
+});
+					</code></pre>
+  			  </section>	  
+  			</section>
+  			
+  			<section>
+  			  <section>
+  			    <br/><br/><br/>
+  			    <h2>Challenge 2: Application State</h2>
+  			    <ul>
+  			  	  <li class="fragment">The page will maintain session state</li>
+  			  	  <li class="fragment">Use sessionStorage for storing session data</li>
+  			  	  <li class="fragment">Services should remain stateless, lightweight, JSON data</li>
+  			  	  <li class="fragment">Authentication through token service</li>
+  			    </ul>
+  			  </section>
+  			  <section>
+  			    <br/>
+  			    <h3>Model</h3>
+  			    <img src="img/model.png" alt="" />
+  			  </section>	  
+  			</section>
+  			
+  			<section>
+  			  <section>
+  			    <br/><br/><br/>
+  			    <h2>Challenge 3: Code Integrity</h2>
+  			    <ul>
+  			  	  <li class="fragment">Javascript is dynamic, errors detected only at runtime</li>
+  			  	  <li class="fragment">CSS is simply markup, so it is difficult to validate</li>
+  			  	  <li class="fragment">JSHint and CSSLint validate code before runtime, enforce best practices</li>
+  			    </ul>
+  			  </section>
+  			  <section>
+  			    <br/><br/><br/>
+  			    <h2>JSHint</h2>
+  			    <p>JSHint validates javascript before runtime and enforces best practices</p>
+  			  </section>  			  
+  			  <section>
+  			    <br/>
+  			    <h3>Example</h3>
+  			    <pre><code contenteditable style="font-size: 15px; line-height: 1.3em;">
+var customer = (function() { /* classes should always be uppercase */
+
+  function Customer() {
+  
+    var name = 'Customer Name', nums = [];
+    console.log(Name); /* checks for undefined variables, enforces hoisting */
+    
+    for (var i = 0; i < 10; i++) {
+      nums[i] = function (j) { /* alerts functions defined in loops */
+        return i + j;
+      };
+    }
+    
+  }
+
+  return Customer;
+
+}());
+					  </code></pre>
+  			  </section>
+  			  <section>
+  			    <br/><br/><br/>
+  			    <h2>CSSLint</h2>
+  			    <p>CSSLint validates stylesheets before runtime and enforces best practices</p>
+  			  </section>  			  
+  			  <section>
+  			    <br/>
+  			    <h3>Example</h3>
+  			    <pre><code contenteditable style="font-size: 14px; line-height: 1.3em;">
+.content {
+  background-color: rgba(0, 0, 0, 1);
+  display: inline-block;
+  float: left; /* floating is ignored with inline-block */
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.sidebar {
+  height: 100%;
+  width: 320px
+  -webkit-border-radius: 5px; /* missing vendor prefixes for border radius */
+  border-radius: 5px;
+}
+
+ul > li {
+  list-style: none !important; /* !important disallowed */
+  padding: 0px; /* px is unnecessary */
+  margin: 0;
+}
+					  </code></pre>
+  			  </section>	  
+  			</section>
+  			
+  			<section>
+  			  <section>
+  			    <br/><br/>
+  			    <h2>Challenge 4: Tools</h2>
+  			    <ul>
+  			  	  <li class="fragment">Traditionally few tools were available on the client side</li>
+  			  	  <li class="fragment">Complexity dictates the need for testing tools</li>
+  			  	  <li class="fragment">QUnit and Mocha for automated unit testing</li>
+  			  	  <li class="fragment">Common processes and compilation need to be automated</li>
+  			  	  <li class="fragment">Grunt for automated minification, concatenation, testing</li>
+  			    </ul>
+  			  </section>
+  			  <section>
+  			    <br/><br/><br/>
+  			    <h2>Grunt</h2>
+  			    <ul>
+  			      <li>Common processes and compilation can be automated</li>
+  			      <li>Can be used for for automated minification, concatenation, testing</li>
+  			    </ul>
+  			  </section>
+  			  <section>
+  			    <br/><br/><br/>
+  			    <h3>Setup</h3>
+  			    <ul>
+  			      <li>Create grunt.js file</li>
+  			      <li>Install node.js</li>
+  			      <li>npm install grunt</li>
+  			      <li>run `grunt` in project directory</li>
+  			    </ul>
+  			  </section>		  
+  			  <section>
+  			    <br/><br/><br/><br/><br/><br/>
+  			    <h3>Example</h3>
+  			  </section>
+  			  <section>
+  			    <br/><br/><br/>
+  			    <h2>QUnit / Mocha</h2>
+  			    <p>
+  			      Both automated testing libraries provide implementations of BDD and TDD for
+  			      unit testing front-end code.
+  			    </p>
+  			  </section>
+  			  <section>
+  			    <br/><br/><br/>
+  			    <h3>Setup</h3>
+  			    <ul>
+  			      <li>Create `/specs` directory</li>
+  			      <li>Write BDD/TDD tests</li>
+  			      <li>run `grunt mocha` in project directory</li>
+  			      <li>Use Phantom.js to run DOM tests</li>
+  			    </ul>
+  			  </section>		  
+  			  <section>
+  			    <br/>
+  			    <h3>Example</h3>
+  			    <pre><code contenteditable style="font-size: 12px; line-height: 1.2em;">
+suite('Common', function() {
+
+  suite("Progress", function() {
+
+    suite("#init()", function() {
+
+      test('should exist', function() {
+        assert.equal(true, Progress.hasOwnProperty('init') && typeof Progress.init === 'function');
+      });
+      
+    });
+    
+    suite("#showLoading()", function() {
+
+      test('should exist', function() {
+        assert.equal(true, Progress.hasOwnProperty('showLoading') && typeof Progress.init === 'function');
+      });
+      
+      test('should change state to active', function() {
+        var tempTarget = document.createElement('div');
+        Progress.init(tempTarget);
+        Progress.showLoading();
+        assert.equal(false, Progress.target.hasClass('hidden'));        
+      });
+      
+    });
+  
+  });
+
+});
+  					</code></pre>
+  			  </section>	  
+  			</section>
+ 
+  			<section>
+  			  <br/><br/><br/>
+  			  <h2>Direction of Web Apps</h2>
+  			  <ul>
+    			  <li class="fragment">Web standards and software will continue to improve</li>
+    			  <li class="fragment">Huge amount of support and tools for web technologies</li>
+    			  <li class="fragment">Movement to more modular, feature specific applications</li>
+  			  </ul>
+			  </section>
+			  
+			  <section>
+			    <br/><br/><br/><br/><br/><br/>
+			    <h2>Thanks!</h2>
+			  </section>
+			
+			</div>
+
+			<!-- The navigational controls UI -->
+			<aside class="controls">
+				<a class="left" href="#">&#x25C4;</a>
+				<a class="right" href="#">&#x25BA;</a>
+				<a class="up" href="#">&#x25B2;</a>
+				<a class="down" href="#">&#x25BC;</a>
+			</aside>
+
+			<!-- Presentation progress bar -->
+			<div class="progress"><span></span></div>
+			
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+
+		<script>
+			// Load reveal.js as well as a classList polyfill if needed
+			head.js( !document.body.classList ? 'lib/js/classList.js' : null )
+				.js( 'js/reveal.js', function() {
+
+				// Parse the query string into a key/value object
+				var query = {};
+				location.search.replace( /[A-Z0-9]+?=(\w*)/gi, function(a) {
+					query[ a.split( '=' ).shift() ] = a.split( '=' ).pop();
+				} );
+
+				// Fires when a slide with data-state=customevent is activated
+				Reveal.addEventListener( 'customevent', function() {
+					console.log( '"customevent" has fired' );
+				} );
+
+				// Fires each time a new slide is activated
+				Reveal.addEventListener( 'slidechanged', function( event ) {
+					// event.previousSlide, event.currentSlide, event.indexh, event.indexv
+				} );
+
+				// Full list of configuration options available here:
+				// https://github.com/hakimel/reveal.js#configuration
+				Reveal.initialize({
+					controls: true,
+					progress: true,
+					history: true,
+					
+					theme: query.theme || 'default', // default/neon/beige
+					transition: query.transition || 'default' // default/cube/page/concave/linear(2d)
+				});
+
+			} );
+			
+			// Load highlight.js for syntax highlighting of code samples
+			head.js( 'lib/js/highlight.js', function() { 
+				hljs.initHighlightingOnLoad(); 
+			} );
+
+			// If we're runnning the notes server we need to include some additional JS
+			// TODO Is there a better way to determine if we're running the notes server?
+			if( window.location.host === 'localhost:1947' ) {
+				head.js( 'socket.io/socket.io.js', 'plugin/speakernotes/client.js' );
+			}
+		</script>
+		
+	</body>
+</html>
